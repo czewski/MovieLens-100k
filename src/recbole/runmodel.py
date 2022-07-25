@@ -1,14 +1,22 @@
 from logging import getLogger
 from recbole.utils import init_logger, init_seed
 from recbole.trainer import Trainer
+from recbole.model import general_recommender
+
 from newmodel import NewModel
+from newtrainer import NewTrainer
+
 from recbole.config import Config
 from recbole.data import create_dataset, data_preparation
 
 
+parameter_dict = {
+    'embedding_size': 64
+}
+
 if __name__ == '__main__':
 
-    config = Config(model=NewModel, dataset='ml-100k')
+    config = Config(model=NewModel, dataset='ml-100k', config_dict=parameter_dict)
     init_seed(config['seed'], config['reproducibility'])
 
     # logger initialization
@@ -25,11 +33,11 @@ if __name__ == '__main__':
     train_data, valid_data, test_data = data_preparation(config, dataset)
 
     # model loading and initialization
-    model = NewModel(config, train_data.dataset).to(config['device'])
+    model = general_recommender.BPR(config, train_data.dataset).to(config['device'])
     logger.info(model)
 
     # trainer loading and initialization
-    trainer = Trainer(config, model)
+    trainer = NewTrainer(config, model)
 
     # model training
     best_valid_score, best_valid_result = trainer.fit(train_data, valid_data)

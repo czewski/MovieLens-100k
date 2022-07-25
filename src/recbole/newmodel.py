@@ -64,4 +64,3 @@ class NewModel(GeneralRecommender):
         scores = torch.matmul(user_e, all_item_e.transpose(0, 1)) # [batch_size, n_items]
 
         return scores
-
