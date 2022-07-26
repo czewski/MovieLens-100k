@@ -6,6 +6,9 @@ from recbole.model.abstract_recommender import GeneralRecommender
 from recbole.model.loss import BPRLoss
 from recbole.model.init import xavier_normal_initialization
 
+from newloss import CustomBPRLoss
+
+
 
 class NewModel(GeneralRecommender):
 
@@ -24,7 +27,7 @@ class NewModel(GeneralRecommender):
         # define layers and loss
         self.user_embedding = nn.Embedding(self.n_users, self.embedding_size)
         self.item_embedding = nn.Embedding(self.n_items, self.embedding_size)
-        self.loss = BPRLoss()
+        self.loss = CustomBPRLoss()
 
         # parameters initialization
         self.apply(xavier_normal_initialization)
