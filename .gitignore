@@ -3,6 +3,7 @@ ml-100k.zip
 src/recbole/log
 src/recbole/log_tensorboard
 src/recbole/saved/
+src/recbole/data.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
