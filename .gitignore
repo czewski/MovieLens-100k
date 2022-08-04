@@ -1,5 +1,8 @@
 # data
+dataset/
 ml-100k.zip
+data/ml100kfolds
+data/
 src/recbole/log
 src/recbole/log_tensorboard
 src/recbole/saved/
