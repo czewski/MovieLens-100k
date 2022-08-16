@@ -6,7 +6,7 @@ from recbole.model.abstract_recommender import GeneralRecommender
 from recbole.model.loss import BPRLoss
 from recbole.model.init import xavier_normal_initialization
 
-from newloss import CustomBPRLoss
+from recbole.BPRLoss import CustomBPRLoss
 
 
 
