@@ -1,9 +1,9 @@
 from logging import getLogger
 from recbole.utils import init_logger, init_seed
 from recbole.trainer import Trainer
-from recbole.model import general_recommender
+from recbole.model import general_recommender, sequential_recommender
 from sklearn.model_selection import KFold
-from newmodel import NewModel
+from recbole.custom_model_general import NewModel
 from newtrainer import NewTrainer
 
 from recbole.config import Config
@@ -38,15 +38,29 @@ parameter_dict = {
     #Evaluation
     'metrics':['Recall', 'MRR', 'NDCG', 'Hit', 'Precision', 'MAP', 'TailPercentage'], # 'AUC', 'MAE', 'RMSE'
     'valid_metric': 'MRR@10',
-    'topk': 10 
+    'topk': 10,
+
     #'eval_args':{'split': {'RS': [0.8,0.1,0.1]}, 'group_by': 'user', 'order': 'RO', 'mode': 'full'}, #{'RS': [0.8,0.1,0.1]} {'LS': 'valid_and_test'}
     #load_split_dataloaders
+
+    #used in sequential rec > --neg_sampling="{'uniform': 1}"
+    'train_neg_sample_args': None,
+    'loss_type': ['CE']
+
 }
 
 if __name__ == '__main__':
-    #--dataset u1
-
-    models = [general_recommender.Pop, general_recommender.ItemKNN, general_recommender.BPR, general_recommender.ConvNCF, general_recommender.MultiDAE, general_recommender.MultiVAE, general_recommender.CDAE]
+    models = [
+    sequential_recommender.STAMP,
+    # NewModel,
+    # general_recommender.Pop, 
+    # general_recommender.ItemKNN, 
+    # general_recommender.BPR, 
+    # general_recommender.ConvNCF,
+    # general_recommender.MultiDAE, 
+    # general_recommender.MultiVAE,
+    # general_recommender.CDAE
+    ]
 
     for model in models: 
         config = Config(model=model,
@@ -87,8 +101,8 @@ if __name__ == '__main__':
         logger.info('test result: {}'.format(test_result))
         logger.info('model name: {}'.format(model.__class__.__name__))
 
-
-        fields=[model.__class__.__name__,config['dataset'],datetime.now(), best_valid_result,test_result, ]  #log location, model location and name
+       # best_valid_result['MRR'] # testar se isso funciona
+        fields=[model.__class__.__name__,config['dataset'],datetime.now(), best_valid_result,test_result]  #log location, model location and name
         with open(r'data.csv', 'a') as f:
             writer = csv.writer(f)
             writer.writerow(fields)
