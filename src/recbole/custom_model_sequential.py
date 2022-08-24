@@ -1,38 +1,22 @@
 import torch
-import torch.nn as nn
+from torch import nn
+from torch.nn.init import normal_
 
-from recbole.utils import InputType
 from recbole.model.abstract_recommender import SequentialRecommender
 from recbole.model.loss import BPRLoss
 
 
-class CustomSTAMP(SequentialRecommender):
-    r"""STAMP is capable of capturing users’ general interests from the long-term memory of a session context,
-    whilst taking into account users’ current interests from the short-term memory of the last-clicks.
-
-
-    Note:
-
-        According to the test results, we made a little modification to the score function mentioned in the paper,
-        and did not use the final sigmoid activation function.
-
-    """
-
+class CustomLSTM(SequentialRecommender):
     def __init__(self, config, dataset):
-        super(CustomSTAMP, self).__init__(config, dataset)
+        super(CustomLSTM, self).__init__(config, dataset)
 
         # load parameters info
         self.embedding_size = config['embedding_size']
 
         # define layers and loss
         self.item_embedding = nn.Embedding(self.n_items, self.embedding_size, padding_idx=0)
-        self.w1 = nn.Linear(self.embedding_size, self.embedding_size, bias=False)
-        self.w2 = nn.Linear(self.embedding_size, self.embedding_size, bias=False)
-        self.w3 = nn.Linear(self.embedding_size, self.embedding_size, bias=False)
-        self.w0 = nn.Linear(self.embedding_size, 1, bias=False)
-        self.b_a = nn.Parameter(torch.zeros(self.embedding_size), requires_grad=True)
-        self.mlp_a = nn.Linear(self.embedding_size, self.embedding_size, bias=True)
-        self.mlp_b = nn.Linear(self.embedding_size, self.embedding_size, bias=True)
+        self.w1 = nn.LSTM(self.embedding_size, self.embedding_size, bias=False)
+       # self.dense = nn.Linear(self.hidden_size, self.embedding_size)
         self.sigmoid = nn.Sigmoid()
         self.tanh = nn.Tanh()
         self.loss_type = config['loss_type']
@@ -56,38 +40,25 @@ class CustomSTAMP(SequentialRecommender):
 
     def forward(self, item_seq, item_seq_len):
         item_seq_emb = self.item_embedding(item_seq)
-        last_inputs = self.gather_indexes(item_seq_emb, item_seq_len - 1)
-        org_memory = item_seq_emb
-        ms = torch.div(torch.sum(org_memory, dim=1), item_seq_len.unsqueeze(1).float())
-        alpha = self.count_alpha(org_memory, last_inputs, ms)
-        vec = torch.matmul(alpha.unsqueeze(1), org_memory)
+       # last_inputs = self.gather_indexes(item_seq_emb, item_seq_len - 1)
+       # org_memory = item_seq_emb
+      #  ms = torch.div(torch.sum(org_memory, dim=1), item_seq_len.unsqueeze(1).float())
+       # alpha = self.count_alpha(org_memory, last_inputs, ms)
+       # vec = torch.matmul(alpha.unsqueeze(1), org_memory)
+
+        item_seq_emb = self.item_embedding(item_seq)
+        #item_seq_emb_dropout = self.emb_dropout(item_seq_emb)
+        lstm_output, _ = self.w1(item_seq_emb)
+       # lstm_output = self.dense(lstm_output)
+        # the embedding of the predicted item, shape of (batch_size, embedding_size)
+        seq_output = self.gather_indexes(lstm_output, item_seq_len - 1)
+        return seq_output
+
         ma = vec.squeeze(1) + ms
         hs = self.tanh(self.mlp_a(ma))
         ht = self.tanh(self.mlp_b(last_inputs))
         seq_output = hs * ht
         return seq_output
-
-    def count_alpha(self, context, aspect, output):
-        r"""This is a function that count the attention weights
-
-        Args:
-            context(torch.FloatTensor): Item list embedding matrix, shape of [batch_size, time_steps, emb]
-            aspect(torch.FloatTensor): The embedding matrix of the last click item, shape of [batch_size, emb]
-            output(torch.FloatTensor): The average of the context, shape of [batch_size, emb]
-
-        Returns:
-            torch.Tensor:attention weights, shape of [batch_size, time_steps]
-        """
-        timesteps = context.size(1)
-        aspect_3dim = aspect.repeat(1, timesteps).view(-1, timesteps, self.embedding_size)
-        output_3dim = output.repeat(1, timesteps).view(-1, timesteps, self.embedding_size)
-        res_ctx = self.w1(context)
-        res_asp = self.w2(aspect_3dim)
-        res_output = self.w3(output_3dim)
-        res_sum = res_ctx + res_asp + res_output + self.b_a
-        res_act = self.w0(self.sigmoid(res_sum))
-        alpha = res_act.squeeze(2)
-        return alpha
 
     def calculate_loss(self, interaction):
         item_seq = interaction[self.ITEM_SEQ]
