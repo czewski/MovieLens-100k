@@ -7,6 +7,8 @@ src/recbole/log
 src/recbole/log_tensorboard
 src/recbole/saved/
 src/recbole/data.csv
+src/recbole/config
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
