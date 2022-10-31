@@ -1,0 +1,66 @@
+seed: 1
+reproducibility: True
+embedding_size: 64
+lstm_size: 128 #quanto maior, mais lento
+USER_ID_FIELD: user_id
+ITEM_ID_FIELD: item_id
+RATING_FIELD: rating
+TIME_FIELD: timestamp
+# ITEM_LIST_LENGTH_FIELD: item_length
+# LIST_SUFFIX: _list
+# MAX_ITEM_LIST_LENGTH: 50
+
+shuffle: False,  # Whether or not to shuffle the training data before each epoch
+
+
+# 1 - https://recbole.io/docs/get_started/started/sequential.html?highlight=item_id_list
+# 2 - https://github.com/RUCAIBox/RecBole/issues/1442
+
+#data
+#dataset: ml-100k
+data_path: /home/eduardo/projects/MovieLens-100k/data/
+dataset: u1
+benchmark_filename: [base, real_valid, real_test] 
+#train, valid, test
+load_col: 
+    inter: [user_id, item_id, rating, timestamp]
+
+# Train
+epochs: 50
+learner: adam  
+# [adam, sgd, adagrad, rmsprop, sparse_adam]
+learning_rate: 0.001
+train_batch_size: 2048
+
+
+#Evaluation
+metrics:
+    - Recall
+    - MRR
+    - NDCG
+    - Hit
+    - Precision
+    #- MAP
+    #- TailPercentage 
+#['Recall', 'MRR', 'NDCG', 'Hit', 'Precision']
+# AUC, MAE, RMSE
+valid_metric: MRR@10
+#eval_args: {'split': {'LS': 'valid_and_test'}, 'order': 'TO', 'mode': 'full', 'group_by': 'user'}
+eval_args: {split: {RS: [1,0,0]}, group_by: user, order: TO, mode: full}
+    # - split: 
+    #     - RS: 
+    #       - 0.8
+    #       - 0.1
+    #       - 0.1
+    #     - group_by: user
+    #     - order: RO
+    #     - mode: full #{RS: [0.8,0.1,0.1]} {LS: valid_and_test}
+
+topk: 10 
+#eval_args:{split: {RS: [0.8,0.1,0.1]}, group_by: user, order: RO, mode: full}, #{RS: [0.8,0.1,0.1]} {LS: valid_and_test}
+#load_split_dataloaders
+
+loss_type: CE
+
+   # 'loss_type': ['CE'] #CE  }} BPR --neg_sampling="{'uniform': 1}"
+

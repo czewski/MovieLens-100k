@@ -1,6 +1,5 @@
 from recbole.trainer import Trainer
 
-
 class NewTrainer(Trainer):
 
     def __init__(self, config, model):

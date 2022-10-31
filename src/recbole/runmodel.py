@@ -1,8 +1,8 @@
 from logging import getLogger
 from recbole.utils import init_logger, init_seed
-from recbole.trainer import Trainer
+#from recbole.trainer import Trainer
 from recbole.model import general_recommender, sequential_recommender
-from sklearn.model_selection import KFold
+#from sklearn.model_selection import KFold
 #from recbole.custom_model_general import NewModel
 from newtrainer import NewTrainer
 from custom_model_sequential import CustomLSTM
@@ -16,7 +16,8 @@ from datetime import datetime
 if __name__ == '__main__':
     models = [
     CustomLSTM
-    # sequential_recommender.STAMP,
+    #sequential_recommender.
+    #sequential_recommender.STAMP,
     # NewModel,
     # general_recommender.Pop, 
     # general_recommender.ItemKNN, 
@@ -29,6 +30,8 @@ if __name__ == '__main__':
 
     for model in models: 
         config = Config(model=model,config_file_list=['/home/eduardo/projects/MovieLens-100k/src/recbole/config/configSequentialModels.yml']) #config_dict=parameter_dict
+        #https://towardsdatascience.com/the-lstm-reference-card-6163ca98ae87
+        #o que muda em um modelo normal pra um modelo de recsys?
 
         init_seed(config['seed'], config['reproducibility'])
         
@@ -46,14 +49,13 @@ if __name__ == '__main__':
 
         # model loading and initialization
         model = model(config, train_data.dataset).to(config['device'])
-
         logger.info(model)
 
         # trainer loading and initialization
         trainer = NewTrainer(config, model)
 
         # model training
-        best_valid_score, best_valid_result = trainer.fit(train_data, valid_data)
+        best_valid_score, best_valid_result = trainer.fit(train_data, valid_data, show_progress=config['show_progress'])
 
         # model evaluation
         test_result = trainer.evaluate(test_data)
@@ -62,6 +64,7 @@ if __name__ == '__main__':
         logger.info('best valid result: {}'.format(best_valid_result))
         logger.info('test result: {}'.format(test_result))
         logger.info('model name: {}'.format(model.__class__.__name__))
+
 
        # best_valid_result['MRR'] # testar se isso funciona
         fields=[model.__class__.__name__,config['dataset'],datetime.now(), best_valid_result,test_result]  #log location, model location and name

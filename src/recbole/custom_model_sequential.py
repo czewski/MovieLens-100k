@@ -12,11 +12,11 @@ class CustomLSTM(SequentialRecommender):
 
         # load parameters info
         self.embedding_size = config['embedding_size']
+        self.lstm_size = config['lstm_size']
 
         # define layers and loss
         self.item_embedding = nn.Embedding(self.n_items, self.embedding_size, padding_idx=0)
-        self.w1 = nn.LSTM(self.embedding_size, self.embedding_size, bias=False)
-       # self.dense = nn.Linear(self.hidden_size, self.embedding_size)
+        self.w1 = nn.LSTM(self.lstm_size, self.lstm_size, bias=False) #posso customizar o tamanho
         self.sigmoid = nn.Sigmoid()
         self.tanh = nn.Tanh()
         self.loss_type = config['loss_type']
@@ -40,24 +40,11 @@ class CustomLSTM(SequentialRecommender):
 
     def forward(self, item_seq, item_seq_len):
         item_seq_emb = self.item_embedding(item_seq)
-       # last_inputs = self.gather_indexes(item_seq_emb, item_seq_len - 1)
-       # org_memory = item_seq_emb
-      #  ms = torch.div(torch.sum(org_memory, dim=1), item_seq_len.unsqueeze(1).float())
-       # alpha = self.count_alpha(org_memory, last_inputs, ms)
-       # vec = torch.matmul(alpha.unsqueeze(1), org_memory)
-
-        item_seq_emb = self.item_embedding(item_seq)
         #item_seq_emb_dropout = self.emb_dropout(item_seq_emb)
         lstm_output, _ = self.w1(item_seq_emb)
        # lstm_output = self.dense(lstm_output)
         # the embedding of the predicted item, shape of (batch_size, embedding_size)
         seq_output = self.gather_indexes(lstm_output, item_seq_len - 1)
-        return seq_output
-
-        ma = vec.squeeze(1) + ms
-        hs = self.tanh(self.mlp_a(ma))
-        ht = self.tanh(self.mlp_b(last_inputs))
-        seq_output = hs * ht
         return seq_output
 
     def calculate_loss(self, interaction):
