@@ -5,7 +5,7 @@ class NewTrainer(Trainer):
     def __init__(self, config, model):
         super(NewTrainer, self).__init__(config, model)
 
-    def _train_epoch(self, train_data, epoch_idx, show_progress=False):
+    def _train_epoch(self, train_data, epoch_idx, show_progress=True):
         self.model.train()
         total_loss = 0.
 

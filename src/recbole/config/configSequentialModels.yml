@@ -10,7 +10,7 @@ TIME_FIELD: timestamp
 # LIST_SUFFIX: _list
 # MAX_ITEM_LIST_LENGTH: 50
 
-shuffle: False,  # Whether or not to shuffle the training data before each epoch
+shuffle: False  # Whether or not to shuffle the training data before each epoch
 
 
 # 1 - https://recbole.io/docs/get_started/started/sequential.html?highlight=item_id_list

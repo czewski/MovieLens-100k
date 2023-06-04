@@ -9,13 +9,34 @@ from custom_model_sequential import CustomLSTM
 
 from recbole.config import Config
 from recbole.data import create_dataset, data_preparation
+from recbole.trainer import Trainer
 
 import csv   
 from datetime import datetime
 
+
+## https://recbole.io/docs/get_started/started/sequential.html
+## Aqui tem bastante informação de como podemos alterar o dataset para ser sequencial
+
+## https://recbole.io/docs/user_guide/usage/use_tensorboard.html
+## Informação de como usar o tensorboard (dados de treinamento e validação)
+
+
+## https://www.tensorflow.org/recommenders/examples/sequential_retrieval
+
+## https://ceur-ws.org/Vol-2955/paper8.pdf ------ PAPER MT BOM QUE TEM USO DE SEQ RECOMMENDATION COM MOVIELENS
+## "The MovieLens datasets are well established for evaluating" -- NESSA PARTE TEM CITAÇÕES
+
+
 if __name__ == '__main__':
     models = [
-    CustomLSTM
+    sequential_recommender.STAMP,
+    sequential_recommender.BERT4Rec,
+    sequential_recommender.NARM,
+    sequential_recommender.NPE,
+    sequential_recommender.SASRec,
+    #sequential_recommender.TransRec
+    #CustomLSTM
     #sequential_recommender.
     #sequential_recommender.STAMP,
     # NewModel,
@@ -29,10 +50,10 @@ if __name__ == '__main__':
     ]
 
     for model in models: 
-        config = Config(model=model,config_file_list=['/home/eduardo/projects/MovieLens-100k/src/recbole/config/configSequentialModels.yml']) #config_dict=parameter_dict
+        config = Config(model=model, config_file_list=['/home/eduardo/masters/MovieLens-100k/src/recbole/config/gptConfigSequential.yml']) #  config_dict=parameter_dict
         #https://towardsdatascience.com/the-lstm-reference-card-6163ca98ae87
-        #o que muda em um modelo normal pra um modelo de recsys?
-
+        
+   
         init_seed(config['seed'], config['reproducibility'])
         
         # logger initialization
@@ -48,14 +69,14 @@ if __name__ == '__main__':
         train_data, valid_data, test_data = data_preparation(config, dataset)
 
         # model loading and initialization
-        model = model(config, train_data.dataset).to(config['device'])
+        model = model(config, dataset).to(config['device'])
         logger.info(model)
 
         # trainer loading and initialization
-        trainer = NewTrainer(config, model)
+        trainer = Trainer(config, model) #NewTrainer(config, model)
 
         # model training
-        best_valid_score, best_valid_result = trainer.fit(train_data, valid_data, show_progress=config['show_progress'])
+        best_valid_score, best_valid_result = trainer.fit(train_data, valid_data, show_progress=True) #config['show_progress']
 
         # model evaluation
         test_result = trainer.evaluate(test_data)
@@ -64,7 +85,6 @@ if __name__ == '__main__':
         logger.info('best valid result: {}'.format(best_valid_result))
         logger.info('test result: {}'.format(test_result))
         logger.info('model name: {}'.format(model.__class__.__name__))
-
 
        # best_valid_result['MRR'] # testar se isso funciona
         fields=[model.__class__.__name__,config['dataset'],datetime.now(), best_valid_result,test_result]  #log location, model location and name
