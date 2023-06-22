@@ -47,4 +47,4 @@ valid_metric: MRR@10
 learner: adam  
 # [adam, sgd, adagrad, rmsprop, sparse_adam]
 learning_rate: 0.001
-stopping_step: 50
+stopping_step: 500 #early stop configuration
